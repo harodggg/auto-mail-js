@@ -1,39 +1,35 @@
 const { ImapFlow } = require('imapflow');
+const { GMAIL_IMAP_SERVER,GMAIL_IMAP_PORT,GMAIL_IMAP_SECURE } = require('../config');
+
 const client = new ImapFlow({
-    host: 'ethereal.email',
-    port: 993,
-    secure: true,
+    host: GMAIL_IMAP_SERVER,
+    port: GMAIL_IMAP_PORT,
+    secure: GMAIL_IMAP_SECURE,
     auth: {
-        user: 'garland.mcclure71@ethereal.email',
-        pass: 'mW6e4wWWnEd3H4hT5B'
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
     }
 });
 
-const main = async () => {
-    // Wait until client connects and authorizes
+
+async function getGmailMessages(){
     await client.connect();
 
-    // Select and lock a mailbox. Throws if mailbox does not exist
-    let lock = await client.getMailboxLock('INBOX');
+    lock = await client.getMailboxLock('INBOX');
     try {
-        // fetch latest message source
-        // client.mailbox includes information about currently selected mailbox
-        // "exists" value is also the largest sequence number available in the mailbox
+                    
         let message = await client.fetchOne(client.mailbox.exists, { source: true });
         console.log(message.source.toString());
 
-        // list subjects for all messages
-        // uid value is always included in FETCH response, envelope strings are in unicode.
         for await (let message of client.fetch('1:*', { envelope: true })) {
             console.log(`${message.uid}: ${message.envelope.subject}`);
         }
     } finally {
-        // Make sure lock is released, otherwise next `getMailboxLock()` never returns
         lock.release();
+
     }
-
-    // log out and close connection
     await client.logout();
-};
 
-main().catch(err => console.error(err));
+}
+
+module.exports = { getGmailMessages }

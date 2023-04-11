@@ -19,7 +19,8 @@
   },
   "homepage": "https://github.com/harodggg/auto-mail-js#readme",
   "dependencies": {
-    "imapflow": "^1.0.125",
+    "dotenv": "^16.0.3",
+    "imapflow": "1.0.127",
     "puppeteer": "^19.8.3"
   }
 }
